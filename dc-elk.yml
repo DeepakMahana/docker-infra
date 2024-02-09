@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+
+  ### ELASTICSEARCH ###
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    environment:
+      - xpack.security.enabled=false
+      - xpack.security.autoconfiguration.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - monitoring
+  
+  ### KIBANA ###
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: kibana
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+    ports:
+      - 5601:5601
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - monitoring
+  
+  ### MetricBeat ###
+  metricbeat:
+    depends_on:
+      - elasticsearch
+      - kibana
+    build: ./metricbeat
+    container_name: metricbeat
+    command: -e
+    environment:
+      - "WAIT_FOR_HOSTS=elasticsearch:9200 kibana:5601"
+      - "HOST_ELASTICSEARCH=elasticsearch:9200"
+      - "HOST_KIBANA=kibana:5601"
+    networks:
+      - monitoring
+    restart: on-failure
+
+volumes:
+  elasticsearch-data:
+    driver: local
+  kibana-data:
+    driver: local
+  metricbeat-data:
+    driver: local
+
+networks:
+  monitoring:
+    driver: bridge
