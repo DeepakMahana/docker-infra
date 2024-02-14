@@ -5,17 +5,17 @@ metricbeat.modules:
 #------------------------------- Prometheus Application Metrics Module -------------------------------
 - module: prometheus
   enabled: true
-  period: 30s
+  period: 10s
   metricsets: ["collector"]
   hosts: ["host.docker.internal:3000"]
   metrics_path: /metrics
 
-- module: prometheus
-  enabled: true
-  period: 30s
-  metricsets: ["collector"]
-  hosts: ["host.docker.internal:3005"]
-  metrics_path: /metrics
+# - module: prometheus
+#   enabled: true
+#   period: 30s
+#   metricsets: ["collector"]
+#   hosts: ["host.docker.internal:3005"]
+#   metrics_path: /metrics
 
 #------------------------------- Elasticsearch Module -------------------------------
 # - module: elasticsearch

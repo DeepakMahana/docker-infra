@@ -55,6 +55,32 @@ services:
     networks:
       - monitoring
     restart: on-failure
+  
+  jaeger:
+    depends_on:
+      - elasticsearch
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - 14269:14269
+      - 14268:14268
+      - 14267:14267
+      - 9411:9411
+      - 16686:16686
+      - 4317:4317
+      - 4318:4318
+    environment:
+      - LOG_LEVEL=debug
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - JAEGER_DISABLED=true
+    command: [
+      "--es.server-urls=http://elasticsearch:9200",
+      "--es.num-shards=1",
+      "--es.num-replicas=0",
+      "--log-level=error"
+    ]
+    networks:
+      - monitoring
 
 volumes:
   elasticsearch-data:
